@@ -62,6 +62,7 @@ const StatisticsComponent = () => {
   const [winFactors, setWinFactors] = useState<any[]>([]);
   const [heatMap, setHeatMap] = useState<any[]>([]);
   const [improvementRanking, setImprovementRanking] = useState<LeaderboardEntry[]>([]);
+  const [mphImprovementRanking, setMphImprovementRanking] = useState<LeaderboardEntry[]>([]);
 
   useEffect(() => {
     // Fetch and parse the CSV file
@@ -293,7 +294,7 @@ const StatisticsComponent = () => {
         };
       })
       .sort((a, b) => a.value - b.value) // Lowest std dev first (most consistent)
-      .slice(0, 10);
+      .slice(0, 6);
     
     setConsistencyRanking(consistencyLeaderboard);
     
@@ -343,7 +344,7 @@ const StatisticsComponent = () => {
     const winAnalysis = {
       betterReaction: 0,
       better60ft: 0,
-      betterET: 0,
+      better330: 0,
       betterMPH: 0,
       totalComparisons: 0
     };
@@ -377,8 +378,8 @@ const StatisticsComponent = () => {
         winAnalysis.better60ft += 1;
       }
       
-      if (winner['1/8ET'] && loser['1/8ET'] && winner['1/8ET'] < loser['1/8ET']) {
-        winAnalysis.betterET += 1;
+      if (winner['330ft'] && loser['330ft'] && winner['330ft'] < loser['330ft']) {
+        winAnalysis.better330 += 1;
       }
       
       if (winner['1/8MPH'] && loser['1/8MPH'] && winner['1/8MPH'] > loser['1/8MPH']) {
@@ -397,8 +398,8 @@ const StatisticsComponent = () => {
         value: (winAnalysis.better60ft / winAnalysis.totalComparisons) * 100
       },
       {
-        name: 'Better ET',
-        value: (winAnalysis.betterET / winAnalysis.totalComparisons) * 100
+        name: 'Better 330ft',
+        value: (winAnalysis.better330 / winAnalysis.totalComparisons) * 100
       },
       {
         name: 'Higher MPH',
@@ -499,6 +500,58 @@ const StatisticsComponent = () => {
       .slice(0, 10);
     
     setImprovementRanking(improvementData);
+    
+    // Driver MPH improvement over time analysis
+    const driverMphProgress = data.reduce((acc, race) => {
+      if (!race['1/8MPH'] || race['1/8MPH'] <= 0) return acc;
+      
+      if (!acc[race.Driver]) {
+        acc[race.Driver] = {
+          driver: race.Driver,
+          carNo: race.CarNo,
+          runs: []
+        };
+      }
+      
+      acc[race.Driver].runs.push({
+        date: race.Date,
+        mph: race['1/8MPH']
+      });
+      
+      return acc;
+    }, {} as Record<string, { driver: string; carNo: string; runs: Array<{date: string; mph: number}> }>);
+    
+    // Calculate MPH improvement rate for each driver
+    const mphImprovementData = Object.values(driverMphProgress)
+      .filter(driver => driver.runs.length >= 4) // Need minimum number of runs for trend
+      .map(driver => {
+        // Sort runs by date
+        const sortedRuns = [...driver.runs].sort((a, b) => 
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+        
+        // Get first and last 2 runs to compare
+        const firstRuns = sortedRuns.slice(0, 2);
+        const lastRuns = sortedRuns.slice(-2);
+        
+        const earlyAvg = firstRuns.reduce((sum, run) => sum + run.mph, 0) / firstRuns.length;
+        const lateAvg = lastRuns.reduce((sum, run) => sum + run.mph, 0) / lastRuns.length;
+        
+        // Calculate improvement (positive is better for MPH)
+        const improvement = lateAvg - earlyAvg;
+        
+        return {
+          driver: driver.driver,
+          carNo: driver.carNo,
+          value: improvement,
+          // Positive values represent improvement (higher MPH is better)
+          improvementPct: ((lateAvg - earlyAvg) / earlyAvg) * 100
+        };
+      })
+      .sort((a, b) => b.value - a.value) // Sort by most improved (most positive change for MPH)
+      .slice(0, 10);
+    
+    setMphImprovementRanking(mphImprovementData);
   };
 
   // Custom tooltips
@@ -834,7 +887,7 @@ const StatisticsComponent = () => {
                   <YAxis 
                     tick={{ fill: '#E4E4E7' }}
                     stroke="#A1A1AA"
-                    label={{ value: 'Win Percentage', angle: -90, position: 'insideLeft', fill: '#E4E4E7' }}
+                    label={{ value: 'Win Percentage', angle: -90, position: 'left', dy: -50, fill: '#E4E4E7' }}
                     domain={[0, 100]}
                   />
                   <Tooltip content={<CustomTooltip />} />
@@ -853,7 +906,7 @@ const StatisticsComponent = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Most Improved Drivers */}
           <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg">
-            <h3 className="text-xl font-semibold mb-3 text-center text-gray-200">Most Improved Drivers</h3>
+            <h3 className="text-xl font-semibold mb-3 text-center text-gray-200">Most Improved Drivers (ET)</h3>
             <p className="text-sm text-gray-400 mb-2 text-center">
               ET improvement from first races to most recent races
             </p>
@@ -887,6 +940,41 @@ const StatisticsComponent = () => {
             </div>
           </div>
           
+          {/* Most Improved Drivers (MPH) */}
+          <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 shadow-lg">
+            <h3 className="text-xl font-semibold mb-3 text-center text-gray-200">Most Improved Drivers (MPH)</h3>
+            <p className="text-sm text-gray-400 mb-2 text-center">
+              MPH improvement from first races to most recent races
+            </p>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={mphImprovementRanking}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
+                  <XAxis 
+                    type="number" 
+                    tick={{ fill: '#E4E4E7' }}
+                    stroke="#A1A1AA"
+                    domain={['dataMin - 0.1', 'dataMax + 0.1']}
+                    label={{ value: 'MPH Improvement', position: 'bottom', fill: '#E4E4E7' }}
+                    tickFormatter={(value) => value.toFixed(1)}
+                  />
+                  <YAxis 
+                    dataKey="driver" 
+                    type="category" 
+                    tick={{ fill: '#E4E4E7' }}
+                    stroke="#A1A1AA"
+                    width={120}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="improvementPct" name="Improvement %" fill="#FF5F5F" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
         
         {/* Fourth row with correlation charts */}
@@ -958,37 +1046,6 @@ const StatisticsComponent = () => {
                   <Scatter name="Runs" data={sixtyVsET} fill="#FF66C4" />
                 </ScatterChart>
               </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      {/* Season Summary */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-6 text-purple-400 border-b border-gray-700 pb-2">Season Summary</h2>
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 shadow-lg">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-gray-700 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2 text-gray-300">Total Races</h3>
-              <p className="text-3xl font-bold text-purple-400">{raceData.length}</p>
-            </div>
-            <div className="bg-gray-700 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2 text-gray-300">Unique Drivers</h3>
-              <p className="text-3xl font-bold text-blue-400">
-                {new Set(raceData.map(record => record.Driver)).size}
-              </p>
-            </div>
-            <div className="bg-gray-700 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2 text-gray-300">Average ET</h3>
-              <p className="text-3xl font-bold text-red-400">
-                {formatTime(raceData.reduce((sum, record) => sum + (record['1/8ET'] || 0), 0) / raceData.length)}
-              </p>
-            </div>
-            <div className="bg-gray-700 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2 text-gray-300">Average MPH</h3>
-              <p className="text-3xl font-bold text-green-400">
-                {formatSpeed(raceData.reduce((sum, record) => sum + (record['1/8MPH'] || 0), 0) / raceData.length)}
-              </p>
             </div>
           </div>
         </div>
