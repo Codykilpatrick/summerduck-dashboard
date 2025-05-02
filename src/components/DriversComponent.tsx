@@ -362,7 +362,7 @@ const DriversComponent = () => {
 
   return (
     <div className="p-6 bg-gray-900 text-gray-200 min-h-screen">
-      <h1 className="text-3xl font-bold mb-8 text-center text-gray-100">Big Dog Automotive 2024 Season</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center text-gray-100">Big Dog Automotive 2024 Season Drivers</h1>
       
       {/* Navigation */}
       <div className="mb-8 flex items-center gap-4 justify-between">

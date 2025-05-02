@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import DashboardComponent from '@/components/DashboardComponent';
 import DriversComponent from '@/components/DriversComponent';
-
+import StatisticsComponent from '@/components/StatisticsComponent';
 export default function Home() {
   const pathname = usePathname();
   const [activeComponent, setActiveComponent] = useState('dashboard');
@@ -17,7 +17,7 @@ export default function Home() {
       case 'drivers':
         return <DriversComponent />;
       case 'statistics':
-        return <div className="p-6 bg-gray-800 rounded-lg shadow-lg">Statistics Component Coming Soon</div>;
+        return <StatisticsComponent />;
       default:
         return <DashboardComponent />;
     }
