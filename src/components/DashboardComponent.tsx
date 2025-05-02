@@ -21,8 +21,14 @@ interface RaceRecord {
   WinLoss: string;
 }
 
-// Custom colors for charts
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+// Custom dark theme colors
+const COLORS = ['#FF5F5F', '#38B6FF', '#5EFF5E', '#FFDE59', '#FF66C4', '#9D66FF'];
+const BACKGROUND_COLOR = '#1E1E2E';
+const CARD_COLOR = '#2A2A3C';
+const TEXT_COLOR = '#E4E4E7';
+const SECONDARY_TEXT_COLOR = '#A1A1AA';
+const ACCENT_COLOR = '#7C3AED';
+const GRID_COLOR = '#3F3F5A';
 
 const DashboardComponent = () => {
   const [raceData, setRaceData] = useState<RaceRecord[]>([]);
@@ -98,7 +104,7 @@ const DashboardComponent = () => {
       .map(([driver, stats]) => {
         const winRate = stats.total > 0 ? Math.round((stats.wins / stats.total) * 100) : 0;
         const [first, last] = driver.split(' ');
-        const displayName = last ? `${first} ${last[0]}.` : first; // Handle single-word names
+        const displayName = last ? `${first} ${last[0]}. ` : first; // Handle single-word names
         
         return {
           name: displayName,
@@ -134,34 +140,60 @@ const DashboardComponent = () => {
         value: parseFloat(avg.toFixed(3))
       };
     })
-    .sort((a, b) => a.value - b.value); // Remove slice to show all drivers
-  
+    .sort((a, b) => a.value - b.value) // Remove slice to show all drivers
+    .slice(0, 6); // Top 6 drivers by reaction time
   setReactionTimes(avgReactions);
   
     
-    // Get performance metrics by race number for a specific driver
-    // Using the first driver with the most races for this example
-    const driverRaceCounts = Array.from(driverStats.entries())
-      .map(([driver, stats]) => ({driver, count: stats.total}))
-      .sort((a, b) => b.count - a.count);
+    // Calculate average ET and MPH by date
+    const datePerformanceMap = new Map<string, {
+      et: number[],
+      mph: number[],
+      count: number
+    }>();
     
-    if (driverRaceCounts.length > 0) {
-      const focusDriver = driverRaceCounts[0].driver;
+    data.forEach(record => {
+      if (!datePerformanceMap.has(record.Date)) {
+        datePerformanceMap.set(record.Date, {
+          et: [],
+          mph: [],
+          count: 0
+        });
+      }
       
-      const driverRaces = data
-        .filter(record => record.Driver === focusDriver)
-        .sort((a, b) => (a.RaceNumber || 0) - (b.RaceNumber || 0));
+      const dateStats = datePerformanceMap.get(record.Date)!;
       
-      const performanceData = driverRaces.map(race => ({
-        race: race.RaceNumber,
-        et: race['1/8ET'],
-        mph: race['1/8MPH'],
-        reaction: race.Reaction,
-        result: race.WinLoss
-      }));
+      if (record['1/8ET'] && record['1/8ET'] > 0) {
+        dateStats.et.push(record['1/8ET']);
+      }
       
-      setPerformanceByRace(performanceData);
-    }
+      if (record['1/8MPH'] && record['1/8MPH'] > 0) {
+        dateStats.mph.push(record['1/8MPH']);
+      }
+      
+      dateStats.count += 1;
+    });
+    
+    const performanceByDate = Array.from(datePerformanceMap.entries())
+      .map(([date, stats]) => {
+        const avgEt = stats.et.length > 0 
+          ? stats.et.reduce((sum, val) => sum + val, 0) / stats.et.length 
+          : 0;
+        
+        const avgMph = stats.mph.length > 0 
+          ? stats.mph.reduce((sum, val) => sum + val, 0) / stats.mph.length 
+          : 0;
+        
+        return {
+          date,
+          et: parseFloat(avgEt.toFixed(3)),
+          mph: parseFloat(avgMph.toFixed(2)),
+          count: stats.count
+        };
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    setPerformanceByRace(performanceByDate);
     
     // Calculate average speed by driver
     const speedsByDriver = new Map<string, number[]>();
@@ -192,41 +224,68 @@ const DashboardComponent = () => {
     setAvgSpeedByDriver(avgSpeeds);
   };
 
+  // Custom chart theme components
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-gray-800 border border-gray-700 p-2 rounded shadow-lg text-gray-200">
+          <p className="font-semibold">{`${label}`}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={`item-${index}`} style={{ color: entry.color }}>
+              {`${entry.name}: ${entry.value}`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading race data...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-900 text-gray-200">
+        <div className="flex flex-col items-center">
+          <svg className="animate-spin h-10 w-10 text-purple-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span className="text-xl">Loading race data...</span>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-red-500 p-4">Error: {error}</div>;
+    return <div className="text-red-500 p-4 bg-gray-900">Error: {error}</div>;
   }
 
-  console.log(performanceByRace);
+  console.log(raceData);
 
   return (
-    <div className="p-6 bg-gray-50">
-      <h1 className="text-3xl font-bold mb-8 text-center text-blue-800">Drag Racing Season Dashboard</h1>
+    <div className="p-6 bg-gray-900 text-gray-200 min-h-screen">
+      <h1 className="text-3xl font-bold mb-8 text-center text-gray-100">SummerDuck Racing Season</h1>
       
       {/* Stats overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-2">Total Races</h2>
-          <p className="text-4xl font-bold text-blue-600">{raceData.length}</p>
+        <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
+          <h2 className="text-xl font-semibold mb-2 text-gray-300">Total Races</h2>
+          <p className="text-4xl font-bold text-purple-400">{raceData.length}</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-2">Unique Drivers</h2>
-          <p className="text-4xl font-bold text-green-600">
+        <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
+          <h2 className="text-xl font-semibold mb-2 text-gray-300">Unique Drivers</h2>
+          <p className="text-4xl font-bold text-blue-400">
             {new Set(raceData.map(record => record.Driver)).size}
           </p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-2">Average MPH</h2>
-          <p className="text-4xl font-bold text-purple-600">
+        <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
+          <h2 className="text-xl font-semibold mb-2 text-gray-300">Average MPH</h2>
+          <p className="text-4xl font-bold text-green-400">
             {(raceData.reduce((sum, record) => sum + (record['1/8MPH'] || 0), 0) / raceData.length).toFixed(2)}
           </p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-2">Average ET</h2>
-          <p className="text-4xl font-bold text-purple-600">
+        <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
+          <h2 className="text-xl font-semibold mb-2 text-gray-300">Average ET</h2>
+          <p className="text-4xl font-bold text-red-400">
             {(raceData.reduce((sum, record) => sum + (record['1/8ET'] || 0), 0) / raceData.length).toFixed(2)}
           </p>
         </div>
@@ -235,8 +294,8 @@ const DashboardComponent = () => {
       {/* Charts grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Driver Win Rates */}
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Driver Win Percentages</h2>
+        <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
+          <h2 className="text-xl font-semibold mb-4 text-gray-300">Driver Win Percentages</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -256,66 +315,112 @@ const DashboardComponent = () => {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: any) => `${value}%`} />
-                <Legend />
+                <Legend formatter={(value, entry) => <span style={{ color: '#E4E4E7' }}>{value}</span>} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
         
         {/* Driver Reaction Times */}
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Average Reaction Times (seconds)</h2>
+        <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
+          <h2 className="text-xl font-semibold mb-4 text-gray-300">Average Reaction Times (seconds)</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={reactionTimes}
                 layout="vertical"
-                margin={{ top: 5, right: 30, left: 60, bottom: 5 }}
+                margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" domain={[0, 'dataMax']} />
-                <YAxis dataKey="driver" type="category" width={80} />
-                <Tooltip formatter={(value: any) => value.toFixed(3)} />
-                <Bar dataKey="value" fill="#82ca9d" name="Reaction Time" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#3F3F5A" />
+                <XAxis 
+                  type="number" 
+                  domain={[0, 'dataMax + 0.015']} 
+                  tick={{ fill: '#E4E4E7' }}
+                  stroke="#A1A1AA"
+                />
+                <YAxis 
+                  dataKey="driver" 
+                  type="category" 
+                  width={100} 
+                  tick={{ fill: '#E4E4E7' }}
+                  stroke="#A1A1AA"
+                  interval={0}
+                />
+                <Tooltip content={<CustomTooltip />} formatter={(value: any) => value.toFixed(3)} />
+                <Bar dataKey="value" fill="#38B6FF" name="Reaction Time" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
         
         {/* Performance Trends */}
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Driver Performance by Race</h2>
+        <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
+          <h2 className="text-xl font-semibold mb-4 text-gray-300">Event Average ET and MPH</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={performanceByRace}
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="race" label={{ value: 'Race Number', position: 'insideBottomRight', offset: -10 }} />
-                <YAxis yAxisId="left" domain={['dataMin - 0.05', 'dataMax + 0.02']} />
-                <YAxis yAxisId="right" orientation="right" domain={[0, 'dataMax + 5']} />
-                <Tooltip />
-                <Legend />
-                <Line yAxisId="left" type="monotone" dataKey="et" stroke="#8884d8" name="1/8 Mile ET" />
-                <Line yAxisId="right" type="monotone" dataKey="mph" stroke="#82ca9d" name="1/8 Mile MPH" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#3F3F5A" />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fill: '#E4E4E7' }}
+                  stroke="#A1A1AA"
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                />
+                <YAxis 
+                  yAxisId="left" 
+                  domain={['dataMin - 0.05', 'dataMax + 0.02']} 
+                  tick={{ fill: '#E4E4E7' }}
+                  stroke="#A1A1AA"
+                  label={{ value: 'ET', angle: -90, position: 'insideLeft', fill: '#E4E4E7' }}
+                />
+                <YAxis 
+                  yAxisId="right" 
+                  orientation="right" 
+                  domain={[0, 'dataMax + 5']} 
+                  tick={{ fill: '#E4E4E7' }}
+                  stroke="#A1A1AA"
+                  label={{ value: 'MPH', angle: 90, position: 'insideRight', fill: '#E4E4E7' }}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend formatter={(value, entry) => <span style={{ color: '#E4E4E7' }}>{value}</span>} />
+                <Line yAxisId="left" type="monotone" dataKey="et" stroke="#FF5F5F" name="Avg 1/8 Mile ET" />
+                <Line yAxisId="right" type="monotone" dataKey="mph" stroke="#5EFF5E" name="Avg 1/8 Mile MPH" />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
         
         {/* Average Speed by Driver */}
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Average 1/8 Mile MPH by Driver</h2>
+        <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
+          <h2 className="text-xl font-semibold mb-4 text-gray-300">Average 1/8 Mile MPH by Driver</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={avgSpeedByDriver} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="driver" />
-                <YAxis domain={['dataMin - 5', 'dataMax + 5']} />
-                <Tooltip />
-                <Bar dataKey="speed" fill="#8884d8" name="Avg MPH" />
+              <BarChart 
+                data={avgSpeedByDriver} 
+                margin={{ top: 5, right: 30, left: 20, bottom: 50 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#3F3F5A" />
+                <XAxis 
+                  dataKey="driver" 
+                  tick={{ fill: '#E4E4E7' }}
+                  stroke="#A1A1AA"
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                  interval={0}
+                />
+                <YAxis 
+                  domain={['dataMin - 5', 'dataMax + 1']} 
+                  tick={{ fill: '#E4E4E7' }}
+                  stroke="#A1A1AA"
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="speed" fill="#FFDE59" name="Avg MPH" />
               </BarChart>
             </ResponsiveContainer>
           </div>
