@@ -263,7 +263,7 @@ const DashboardComponent = () => {
 
   return (
     <div className="p-6 bg-gray-900 text-gray-200 min-h-screen">
-      <h1 className="text-3xl font-bold mb-8 text-center text-gray-100">SummerDuck Racing Season</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center text-gray-100">Big Dog Automotive 2024 Season</h1>
       
       {/* Stats overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">

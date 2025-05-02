@@ -10,7 +10,7 @@ export default function Home() {
         {/* Optional Navbar */}
         <nav className="mb-6 px-4 py-3 bg-gray-800 rounded-lg shadow-lg border border-gray-700">
           <div className="flex justify-between items-center">
-            <div className="text-xl font-bold text-gray-100">Drag Racing Analytics</div>
+            <div className="text-xl font-bold text-gray-100">SummerDuck Racing Analytics</div>
             <div className="flex space-x-4">
               <button className="px-3 py-1 text-gray-200 hover:text-purple-400 focus:outline-none">
                 Dashboard
