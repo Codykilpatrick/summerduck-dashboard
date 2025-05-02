@@ -487,9 +487,11 @@ const StatisticsComponent = () => {
         
         // Calculate improvement (negative is better)
         const improvement = lateAvg - earlyAvg;
+        const [first, last] = driver.driver.split(' ');
+        const displayName = last ? `${first} ${last[0]}. ` : first; // Handle single-word names
         
         return {
-          driver: driver.driver,
+          driver: displayName,
           carNo: driver.carNo,
           value: improvement,
           // Negative values represent improvement (lower ET is better)
@@ -539,9 +541,10 @@ const StatisticsComponent = () => {
         
         // Calculate improvement (positive is better for MPH)
         const improvement = lateAvg - earlyAvg;
-        
+        const [first, last] = driver.driver.split(' ');
+        const displayName = last ? `${first} ${last[0]}. ` : first; // Handle single-word names
         return {
-          driver: driver.driver,
+          driver: displayName,
           carNo: driver.carNo,
           value: improvement,
           // Positive values represent improvement (higher MPH is better)
@@ -859,6 +862,7 @@ const StatisticsComponent = () => {
                     tick={{ fill: '#E4E4E7' }}
                     stroke="#A1A1AA"
                     width={120}
+                    interval={0}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="value" name="Std Dev (sec)" fill="#38B6FF" />
@@ -915,7 +919,7 @@ const StatisticsComponent = () => {
                 <BarChart
                   data={improvementRanking}
                   layout="vertical"
-                  margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
+                  margin={{ top: 5, right: 30, left: 120, bottom: 25 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
                   <XAxis 
@@ -923,7 +927,7 @@ const StatisticsComponent = () => {
                     tick={{ fill: '#E4E4E7' }}
                     stroke="#A1A1AA"
                     domain={['dataMin - 0.1', 'dataMax + 0.1']}
-                    label={{ value: 'ET Improvement (sec)', position: 'bottom', fill: '#E4E4E7' }}
+                    label={{ value: 'ET Improvement Percentage', position: 'bottom', fill: '#E4E4E7' }}
                     tickFormatter={(value) => value.toFixed(2)}
                   />
                   <YAxis 
@@ -932,6 +936,7 @@ const StatisticsComponent = () => {
                     tick={{ fill: '#E4E4E7' }}
                     stroke="#A1A1AA"
                     width={120}
+                    interval={0}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="improvementPct" name="Improvement %" fill="#5EFF5E" />
@@ -951,7 +956,7 @@ const StatisticsComponent = () => {
                 <BarChart
                   data={mphImprovementRanking}
                   layout="vertical"
-                  margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
+                  margin={{ top: 5, right: 30, left: 120, bottom: 25 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
                   <XAxis 
@@ -959,7 +964,7 @@ const StatisticsComponent = () => {
                     tick={{ fill: '#E4E4E7' }}
                     stroke="#A1A1AA"
                     domain={['dataMin - 0.1', 'dataMax + 0.1']}
-                    label={{ value: 'MPH Improvement', position: 'bottom', fill: '#E4E4E7' }}
+                    label={{ value: 'MPH Improvement Percentage', position: 'bottom', fill: '#E4E4E7' }}
                     tickFormatter={(value) => value.toFixed(1)}
                   />
                   <YAxis 
@@ -968,6 +973,7 @@ const StatisticsComponent = () => {
                     tick={{ fill: '#E4E4E7' }}
                     stroke="#A1A1AA"
                     width={120}
+                    interval={0}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="improvementPct" name="Improvement %" fill="#FF5F5F" />
