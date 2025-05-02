@@ -377,6 +377,7 @@ const DashboardComponent = () => {
                   tick={{ fill: '#E4E4E7' }}
                   stroke="#A1A1AA"
                   label={{ value: 'ET', angle: -90, position: 'insideLeft', fill: '#E4E4E7' }}
+                  tickFormatter={(value) => value.toFixed(3)}
                 />
                 <YAxis 
                   yAxisId="right" 
@@ -418,6 +419,7 @@ const DashboardComponent = () => {
                   domain={['dataMin - 5', 'dataMax + 1']} 
                   tick={{ fill: '#E4E4E7' }}
                   stroke="#A1A1AA"
+                  tickFormatter={(value) => value.toFixed(2)}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="speed" fill="#FFDE59" name="Avg MPH" />
