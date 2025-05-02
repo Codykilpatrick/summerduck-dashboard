@@ -35,6 +35,9 @@ interface DriverStats {
   avgEighthET: number;
   avgEighthMPH: number;
   bestEighthET: number;
+  bestThreeThirty: number;
+  bestSixtyFoot: number;
+  bestReaction: number;
   bestEighthMPH: number;
   raceHistory: RaceRecord[];
 }
@@ -127,11 +130,14 @@ const DriversComponent = () => {
     const threeThirtyFootTimes = driverRaces.filter(race => race['330ft'] && race['330ft'] > 0).map(race => race['330ft']);
     const eighthETTimes = driverRaces.filter(race => race['1/8ET'] && race['1/8ET'] > 0).map(race => race['1/8ET']);
     const eighthMPHSpeeds = driverRaces.filter(race => race['1/8MPH'] && race['1/8MPH'] > 0).map(race => race['1/8MPH']);
+
     
     // Find best times/speeds
     const bestEighthET = eighthETTimes.length > 0 ? Math.min(...eighthETTimes) : 0;
     const bestEighthMPH = eighthMPHSpeeds.length > 0 ? Math.max(...eighthMPHSpeeds) : 0;
-    
+    const bestThreeThirty = threeThirtyFootTimes.length > 0 ? Math.min(...threeThirtyFootTimes) : 0;
+    const bestSixtyFoot = sixtyFootTimes.length > 0 ? Math.min(...sixtyFootTimes) : 0;
+    const bestReaction = reactionTimes.length > 0 ? Math.min(...reactionTimes) : 0;
     setDriverStats({
       name: selectedDriver,
       carNumber: driverRaces[0].CarNo,
@@ -145,7 +151,10 @@ const DriversComponent = () => {
       avgEighthET: calcAverage(eighthETTimes),
       avgEighthMPH: calcAverage(eighthMPHSpeeds),
       bestEighthET,
+      bestThreeThirty,
       bestEighthMPH,
+      bestSixtyFoot,
+      bestReaction,
       raceHistory: driverRaces
     });
     
@@ -357,22 +366,29 @@ const DriversComponent = () => {
       
       {/* Navigation */}
       <div className="mb-8 flex items-center gap-4 justify-between">
-        <a href="/" className="bg-gray-800 px-4 py-2 rounded hover:bg-gray-700 transition">
+        <a href="/" className="bg-gray-800 border border-gray-700 px-4 py-2 rounded hover:bg-gray-700 transition text-white">
           ← Back to Dashboard
         </a>
         
         <div className="flex items-center gap-4">
           <label htmlFor="driver-select" className="text-gray-300">Select Driver:</label>
-          <select 
-            id="driver-select"
-            className="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white"
-            value={selectedDriver}
-            onChange={(e) => setSelectedDriver(e.target.value)}
-          >
-            {drivers.map(driver => (
-              <option key={driver} value={driver}>{driver}</option>
-            ))}
-          </select>
+          <div className="relative">
+            <select 
+              id="driver-select"
+              className="bg-gray-800 border border-gray-700 rounded px-3 py-2 pr-4 text-white appearance-none"
+              value={selectedDriver}
+              onChange={(e) => setSelectedDriver(e.target.value)}
+            >
+              {drivers.map(driver => (
+                <option key={driver} value={driver}>{driver}</option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -406,16 +422,19 @@ const DriversComponent = () => {
                   <div className="bg-gray-700 p-4 rounded-lg">
                     <h3 className="text-lg font-semibold mb-2 text-purple-300">Reaction Time</h3>
                     <p className="text-2xl">Avg: {formatTime(driverStats.avgReaction)} sec</p>
+                    <p className="text-lg text-green-400">Best: {formatTime(driverStats.bestReaction)} sec</p>
                   </div>
                   
                   <div className="bg-gray-700 p-4 rounded-lg">
                     <h3 className="text-lg font-semibold mb-2 text-purple-300">60ft Time</h3>
                     <p className="text-2xl">Avg: {formatTime(driverStats.avg60ft)} sec</p>
+                    <p className="text-lg text-green-400">Best: {formatTime(driverStats.bestSixtyFoot)} sec</p>
                   </div>
                   
                   <div className="bg-gray-700 p-4 rounded-lg">
                     <h3 className="text-lg font-semibold mb-2 text-purple-300">330ft Time</h3>
                     <p className="text-2xl">Avg: {formatTime(driverStats.avg330ft)} sec</p>
+                    <p className="text-lg text-green-400">Best: {formatTime(driverStats.bestThreeThirty)} sec</p>
                   </div>
                   
                   <div className="bg-gray-700 p-4 rounded-lg">
@@ -459,7 +478,7 @@ const DriversComponent = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={performanceTrend}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    margin={{ top: 5, right: 40, left: 40, bottom: -20 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
                     <XAxis 
@@ -475,7 +494,7 @@ const DriversComponent = () => {
                       domain={['dataMin - 0.1', 'dataMax + 0.1']} 
                       tick={{ fill: '#E4E4E7' }}
                       stroke="#A1A1AA"
-                      label={{ value: 'ET', angle: -90, position: 'insideLeft', fill: '#E4E4E7' }}
+                      label={{ value: 'ET', angle: -90, position: 'insideLeft', fill: '#E4E4E7', dx: -25 }}
                       tickFormatter={(value) => value.toFixed(3)}
                     />
                     <YAxis 
@@ -484,8 +503,8 @@ const DriversComponent = () => {
                       domain={[0, 'dataMax + 5']} 
                       tick={{ fill: '#E4E4E7' }}
                       stroke="#A1A1AA"
-                      label={{ value: 'MPH', angle: 90, position: 'insideRight', fill: '#E4E4E7' }}
-                      tickFormatter={(value) => value.toFixed(3)}
+                      label={{ value: 'MPH', angle: 90, position: 'insideRight', fill: '#E4E4E7', dx: 25 }}
+                      tickFormatter={(value) => value.toFixed(2)}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend formatter={(value, entry) => <span style={{ color: '#E4E4E7' }}>{value}</span>} />
