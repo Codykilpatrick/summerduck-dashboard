@@ -32,6 +32,25 @@ interface RaceRecord {
   WinLoss: string;
 }
 
+// Interface for performance by race data
+interface PerformanceData {
+  date: string;
+  et: number;
+  mph: number;
+  count: number;
+}
+
+// Interface for tooltip props
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number;
+    color: string;
+  }>;
+  label?: string;
+}
+
 // Custom dark theme colors
 const COLORS = ['#FF5F5F', '#38B6FF', '#5EFF5E', '#FFDE59', '#FF66C4', '#9D66FF'];
 
@@ -43,7 +62,7 @@ const DashboardComponent = () => {
   // Derived data for charts
   const [driverWinRates, setDriverWinRates] = useState<{ name: string; value: number }[]>([]);
   const [reactionTimes, setReactionTimes] = useState<{ driver: string; value: number }[]>([]);
-  const [performanceByRace, setPerformanceByRace] = useState<any[]>([]);
+  const [performanceByRace, setPerformanceByRace] = useState<PerformanceData[]>([]);
   const [avgSpeedByDriver, setAvgSpeedByDriver] = useState<{ driver: string; speed: number }[]>([]);
 
   useEffect(() => {
@@ -70,7 +89,7 @@ const DashboardComponent = () => {
             processData(parsedData);
             setLoading(false);
           },
-          error: (error: any) => {
+          error: (error: Error) => {
             setError(`Error parsing CSV: ${error.message}`);
             setLoading(false);
           },
@@ -233,12 +252,12 @@ const DashboardComponent = () => {
   };
 
   // Custom chart theme components
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-gray-800 border border-gray-700 p-2 rounded shadow-lg text-gray-200">
           <p className="font-semibold">{`${label}`}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <p key={`item-${index}`} style={{ color: entry.color }}>
               {`${entry.name}: ${entry.value}`}
             </p>
@@ -282,8 +301,6 @@ const DashboardComponent = () => {
   if (error) {
     return <div className="text-red-500 p-4 bg-gray-900">Error: {error}</div>;
   }
-
-  console.log(raceData);
 
   return (
     <div className="p-6 bg-gray-900 text-gray-200 min-h-screen">
@@ -378,7 +395,7 @@ const DashboardComponent = () => {
                   stroke="#A1A1AA"
                   interval={0}
                 />
-                <Tooltip content={<CustomTooltip />} formatter={(value: any) => value.toFixed(3)} />
+                <Tooltip content={<CustomTooltip />} formatter={(value: number) => value.toFixed(3)} />
                 <Bar dataKey="value" fill="#38B6FF" name="Reaction Time" />
               </BarChart>
             </ResponsiveContainer>
