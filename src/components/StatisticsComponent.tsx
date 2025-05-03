@@ -36,6 +36,8 @@ interface LeaderboardEntry {
   value: number;
   date?: string;
   opponent?: string;
+  races?: number;
+  improvementPct?: number;
 }
 
 interface RelationshipData {
@@ -43,6 +45,31 @@ interface RelationshipData {
   y: number;
   z: number;
   driver: string;
+}
+
+// Interface for win factors
+interface WinFactor {
+  name: string;
+  value: number;
+}
+
+// Interface for tooltip props
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number | string;
+    color?: string;
+  }>;
+  label?: string;
+}
+
+// Interface for scatter tooltip props
+interface ScatterTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    payload: RelationshipData;
+  }>;
 }
 
 // Custom theme colors
@@ -74,7 +101,7 @@ const StatisticsComponent = () => {
   const [reactionVsET, setReactionVsET] = useState<RelationshipData[]>([]);
   const [sixtyVsET, setSixtyVsET] = useState<RelationshipData[]>([]);
   const [consistencyRanking, setConsistencyRanking] = useState<LeaderboardEntry[]>([]);
-  const [winFactors, setWinFactors] = useState<any[]>([]);
+  const [winFactors, setWinFactors] = useState<WinFactor[]>([]);
   const [improvementRanking, setImprovementRanking] = useState<LeaderboardEntry[]>([]);
   const [mphImprovementRanking, setMphImprovementRanking] = useState<LeaderboardEntry[]>([]);
 
@@ -101,7 +128,7 @@ const StatisticsComponent = () => {
             processStatistics(parsedData);
             setLoading(false);
           },
-          error: (error: any) => {
+          error: (error: Error) => {
             setError(`Error parsing CSV: ${error.message}`);
             setLoading(false);
           },
@@ -531,21 +558,21 @@ const StatisticsComponent = () => {
   };
 
   // Custom tooltips
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-gray-800 border border-gray-700 p-2 rounded shadow-lg text-gray-200">
           <p className="font-semibold">{`${label}`}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <p key={`item-${index}`} style={{ color: entry.color || '#fff' }}>
               {`${entry.name}: ${
                 typeof entry.value === 'number' && !isNaN(entry.value)
                   ? entry.name.toLowerCase().includes('percent') || entry.name.includes('%')
                     ? `${entry.value.toFixed(1)}%`
                     : entry.name.toLowerCase().includes('time') ||
-                        entry.name.toLowerCase().includes('et') ||
-                        entry.name.toLowerCase().includes('reaction') ||
-                        entry.name.toLowerCase().includes('60ft')
+                      entry.name.toLowerCase().includes('et') ||
+                      entry.name.toLowerCase().includes('reaction') ||
+                      entry.name.toLowerCase().includes('60ft')
                       ? entry.value.toFixed(3)
                       : entry.value.toFixed(1)
                   : entry.value
@@ -558,7 +585,7 @@ const StatisticsComponent = () => {
     return null;
   };
 
-  const ScatterTooltip = ({ active, payload }: any) => {
+  const ScatterTooltip = ({ active, payload }: ScatterTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -573,7 +600,7 @@ const StatisticsComponent = () => {
     return null;
   };
 
-  const SixtyTooltip = ({ active, payload }: any) => {
+  const SixtyTooltip = ({ active, payload }: ScatterTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -820,7 +847,7 @@ const StatisticsComponent = () => {
                       <td className="px-2 py-2 font-semibold text-orange-400">
                         {formatPercent(entry.value)}%
                       </td>
-                      <td className="px-2 py-2">{(entry as any).races}</td>
+                      <td className="px-2 py-2">{entry.races}</td>
                     </tr>
                   ))}
                 </tbody>
