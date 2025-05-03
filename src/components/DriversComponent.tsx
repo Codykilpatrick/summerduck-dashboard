@@ -15,6 +15,7 @@ import {
   Radar,
 } from 'recharts';
 import Papa from 'papaparse';
+import Link from 'next/link';
 
 // Type definitions
 interface RaceRecord {
@@ -52,6 +53,47 @@ interface DriverStats {
   raceHistory: RaceRecord[];
 }
 
+// Interface for performance trend data
+interface PerformanceData {
+  date: string;
+  et: number | null;
+  mph: number | null;
+  reaction: number | null;
+  races: number;
+  wins: number;
+}
+
+// Interface for opponent stats data
+interface OpponentData {
+  opponent: string;
+  races: number;
+  wins: number;
+  losses: number;
+  winRate: number;
+}
+
+// Interface for driver performance metrics
+interface DriverPerformanceMetrics {
+  reaction: number[];
+  sixtyFoot: number[];
+  threeThirty: number[];
+  eighthET: number[];
+  eighthMPH: number[];
+  wins: number;
+  races: number;
+}
+
+// Interface for tooltip props
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number | string;
+    color: string;
+  }>;
+  label?: string;
+}
+
 // Custom theme colors
 const GRID_COLOR = '#3F3F5A';
 
@@ -62,8 +104,8 @@ const DriversComponent = () => {
   const [drivers, setDrivers] = useState<string[]>([]);
   const [selectedDriver, setSelectedDriver] = useState<string>('');
   const [driverStats, setDriverStats] = useState<DriverStats | null>(null);
-  const [performanceTrend, setPerformanceTrend] = useState<any[]>([]);
-  const [opponentStats, setOpponentStats] = useState<any[]>([]);
+  const [performanceTrend, setPerformanceTrend] = useState<PerformanceData[]>([]);
+  const [opponentStats, setOpponentStats] = useState<OpponentData[]>([]);
 
   useEffect(() => {
     // Fetch and parse the CSV file
@@ -99,7 +141,7 @@ const DriversComponent = () => {
 
             setLoading(false);
           },
-          error: (error: any) => {
+          error: (error: Error) => {
             setError(`Error parsing CSV: ${error.message}`);
             setLoading(false);
           },
@@ -255,12 +297,12 @@ const DriversComponent = () => {
   };
 
   // Custom tooltips
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-gray-800 border border-gray-700 p-2 rounded shadow-lg text-gray-200">
           <p className="font-semibold">{`${label}`}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <p key={`item-${index}`} style={{ color: entry.color }}>
               {`${entry.name}: ${entry.value}`}
             </p>
@@ -300,11 +342,11 @@ const DriversComponent = () => {
 
         return acc;
       },
-      {} as Record<string, any>
+      {} as Record<string, DriverPerformanceMetrics>
     );
 
     // Find min/max values for each metric
-    const findMinMax = (metric: string, accessor: (stats: any) => number[]) => {
+    const findMinMax = (metric: string, accessor: (stats: DriverPerformanceMetrics) => number[]) => {
       let min = Infinity;
       let max = -Infinity;
 
@@ -423,12 +465,12 @@ const DriversComponent = () => {
 
       {/* Navigation */}
       <div className="mb-8 flex items-center gap-4 justify-between">
-        <a
+        <Link
           href="/"
           className="bg-gray-800 border border-gray-700 px-4 py-2 rounded hover:bg-gray-700 transition text-white"
         >
           ← Back to Dashboard
-        </a>
+        </Link>
 
         <div className="flex items-center gap-4">
           <label htmlFor="driver-select" className="text-gray-300">
