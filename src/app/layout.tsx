@@ -5,7 +5,7 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Drag Racing Dashboard',
+  title: 'Summerduck Dragway Dashboard',
   description: 'A dashboard for analyzing drag racing season data',
 };
 

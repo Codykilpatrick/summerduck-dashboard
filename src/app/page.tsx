@@ -27,7 +27,7 @@ export default function Home() {
         {/* Navigation Bar */}
         <nav className="mb-6 px-4 py-3 bg-gray-800 rounded-lg shadow-lg border border-gray-700">
           <div className="flex justify-between items-center">
-            <div className="text-xl font-bold text-gray-100">SummerDuck Racing Analytics</div>
+            <div className="text-xl font-bold text-gray-100">Summerduck Racing Analytics</div>
             <div className="flex space-x-4">
               <button
                 className={`px-3 py-1 focus:outline-none ${activeComponent === 'dashboard' ? 'text-purple-400' : 'text-gray-400 hover:text-purple-400'}`}
@@ -56,7 +56,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="mt-8 px-4 py-3 text-center text-gray-400 text-sm">
-          © {new Date().getFullYear()} SummerDuck Racing | All rights reserved
+          © {new Date().getFullYear()} Summerduck Racing | All rights reserved
         </footer>
       </div>
     </main>
