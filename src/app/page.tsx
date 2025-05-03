@@ -1,17 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { usePathname } from 'next/navigation';
 import DashboardComponent from '@/components/DashboardComponent';
 import DriversComponent from '@/components/DriversComponent';
 import StatisticsComponent from '@/components/StatisticsComponent';
 export default function Home() {
-  const pathname = usePathname();
   const [activeComponent, setActiveComponent] = useState('dashboard');
-  
+
   // Render component based on active state
   const renderComponent = () => {
-    switch(activeComponent) {
+    switch (activeComponent) {
       case 'dashboard':
         return <DashboardComponent />;
       case 'drivers':
@@ -31,19 +29,19 @@ export default function Home() {
           <div className="flex justify-between items-center">
             <div className="text-xl font-bold text-gray-100">SummerDuck Racing Analytics</div>
             <div className="flex space-x-4">
-              <button 
+              <button
                 className={`px-3 py-1 focus:outline-none ${activeComponent === 'dashboard' ? 'text-purple-400' : 'text-gray-400 hover:text-purple-400'}`}
                 onClick={() => setActiveComponent('dashboard')}
               >
                 Dashboard
               </button>
-              <button 
+              <button
                 className={`px-3 py-1 focus:outline-none ${activeComponent === 'statistics' ? 'text-purple-400' : 'text-gray-400 hover:text-purple-400'}`}
                 onClick={() => setActiveComponent('statistics')}
               >
                 Statistics
               </button>
-              <button 
+              <button
                 className={`px-3 py-1 focus:outline-none ${activeComponent === 'drivers' ? 'text-purple-400' : 'text-gray-400 hover:text-purple-400'}`}
                 onClick={() => setActiveComponent('drivers')}
               >
@@ -52,7 +50,7 @@ export default function Home() {
             </div>
           </div>
         </nav>
-        
+
         {/* Render Active Component */}
         {renderComponent()}
 

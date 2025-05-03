@@ -1,6 +1,5 @@
 ## A data dashboard for Sumerduck Dragway
 
-
 ## Getting Started
 
 First, run the development server:
