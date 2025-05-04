@@ -463,8 +463,8 @@ const DashboardComponent = () => {
                 data={reactionTimes}
                 layout="vertical"
                 margin={windowWidth < 640 ? 
-                  { top: 5, right: 20, left: 60, bottom: 5 } : 
-                  { top: 5, right: 30, left: 80, bottom: 5 }}
+                  { top: 5, right: 20, left: 10, bottom: 5 } : 
+                  { top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#3F3F5A" />
                 <XAxis
@@ -476,10 +476,12 @@ const DashboardComponent = () => {
                 <YAxis
                   dataKey="driver"
                   type="category"
-                  width={windowWidth < 640 ? 60 : 100}
+                  width={windowWidth < 640 ? 70 : 90}
                   tick={{ fill: '#E4E4E7', fontSize: windowWidth < 640 ? 10 : 12 }}
                   stroke="#A1A1AA"
                   interval={0}
+                  tickMargin={windowWidth < 640 ? 0 : 5}
+                  dx={windowWidth < 640 ? -10 : 0}
                 />
                 <Tooltip content={<CustomTooltip />} formatter={(value: number) => value.toFixed(3)} />
                 <Bar dataKey="value" fill="#38B6FF" name="Reaction Time" />
