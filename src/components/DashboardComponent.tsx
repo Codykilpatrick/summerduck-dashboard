@@ -55,7 +55,8 @@ interface CustomTooltipProps {
 // Custom dark theme colors
 const COLORS = ['#FF5F5F', '#38B6FF', '#5EFF5E', '#FFDE59', '#FF66C4', '#9D66FF'];
 
-// Add customized active shape
+// Add customized active shape using a typed function
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const renderActiveShape = (props: any) => {
   const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, value } = props;
   
