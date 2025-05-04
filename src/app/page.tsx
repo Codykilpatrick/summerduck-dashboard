@@ -26,9 +26,9 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         {/* Navigation Bar */}
         <nav className="mb-6 px-4 py-3 bg-gray-800 rounded-lg shadow-lg border border-gray-700">
-          <div className="flex justify-between items-center">
-            <div className="text-xl font-bold text-gray-100">Summerduck Racing Analytics</div>
-            <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row justify-between items-center">
+            <div className="text-xl font-bold text-gray-100 mb-3 sm:mb-0">Summerduck Racing Analytics</div>
+            <div className="flex flex-wrap justify-center gap-2 sm:space-x-4">
               <button
                 className={`px-3 py-1 focus:outline-none ${activeComponent === 'dashboard' ? 'text-purple-400' : 'text-gray-400 hover:text-purple-400'}`}
                 onClick={() => setActiveComponent('dashboard')}
