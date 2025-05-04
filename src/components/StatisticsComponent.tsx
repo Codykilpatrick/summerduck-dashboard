@@ -88,6 +88,19 @@ const GRID_COLOR = '#3F3F5A';
 const StatisticsComponent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
 
   // Leaderboards
   const [bestET, setBestET] = useState<LeaderboardEntry[]>([]);
@@ -314,7 +327,7 @@ const StatisticsComponent = () => {
           stats.etTimes.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
           stats.etTimes.length;
         const stdDev = Math.sqrt(variance);
-
+        
         return {
           driver: stats.driver,
           carNo: stats.carNo,
@@ -877,17 +890,18 @@ const StatisticsComponent = () => {
                 <BarChart
                   data={consistencyRanking}
                   layout="vertical"
-                  margin={{ top: 5, right: 30, left: 120, bottom: 5 }}
+                  margin={{ top: 5, right: 30, left: 30, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
                   <XAxis type="number" tick={{ fill: '#E4E4E7' }} stroke="#A1A1AA" />
                   <YAxis
                     dataKey="driver"
                     type="category"
-                    tick={{ fill: '#E4E4E7' }}
+                    tick={{ fill: '#E4E4E7', fontSize: windowWidth < 640 ? 10 : 12 }}
                     stroke="#A1A1AA"
-                    width={120}
+                    width={60}
                     interval={0}
+                    dx={-10}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="value" name="Std Dev (sec)" fill="#38B6FF" />
@@ -905,19 +919,34 @@ const StatisticsComponent = () => {
             </p>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={winFactors} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <BarChart 
+                  data={winFactors} 
+                  margin={{ top: 5, right: 30, left: 5, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
-                  <XAxis dataKey="name" tick={{ fill: '#E4E4E7' }} stroke="#A1A1AA" />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fill: '#E4E4E7', fontSize: windowWidth < 640 ? 10 : 12 }} 
+                    stroke="#A1A1AA"
+                    interval={0}
+                    angle={windowWidth < 640 ? -45 : 0}
+                    textAnchor={windowWidth < 640 ? "end" : "middle"}
+                    height={windowWidth < 640 ? 60 : 30}
+                  />
                   <YAxis
                     tick={{ fill: '#E4E4E7' }}
                     stroke="#A1A1AA"
-                    label={{
-                      value: 'Win Percentage',
-                      angle: -90,
-                      position: 'left',
-                      dy: -50,
-                      fill: '#E4E4E7',
-                    }}
+                    label={windowWidth < 640 ? 
+                      {} : 
+                      {
+                        value: 'Win Percentage',
+                        angle: -90,
+                        position: 'left',
+                        dy: -50,
+                        dx: 15,
+                        fill: '#E4E4E7',
+                      }
+                    }
                     domain={[0, 100]}
                   />
                   <Tooltip content={<CustomTooltip />} />
@@ -947,7 +976,7 @@ const StatisticsComponent = () => {
                 <BarChart
                   data={improvementRanking}
                   layout="vertical"
-                  margin={{ top: 5, right: 30, left: 120, bottom: 25 }}
+                  margin={{ top: 5, right: 30, left: 10, bottom: 25 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
                   <XAxis
@@ -965,10 +994,11 @@ const StatisticsComponent = () => {
                   <YAxis
                     dataKey="driver"
                     type="category"
-                    tick={{ fill: '#E4E4E7' }}
+                    tick={{ fill: '#E4E4E7', fontSize: windowWidth < 640 ? 10 : 12 }}
                     stroke="#A1A1AA"
-                    width={120}
+                    width={80}
                     interval={0}
+                    dx={-10}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="improvementPct" name="Improvement %" fill="#5EFF5E" />
@@ -990,7 +1020,7 @@ const StatisticsComponent = () => {
                 <BarChart
                   data={mphImprovementRanking}
                   layout="vertical"
-                  margin={{ top: 5, right: 30, left: 120, bottom: 25 }}
+                  margin={{ top: 5, right: 30, left: 10, bottom: 25 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
                   <XAxis
@@ -1008,10 +1038,11 @@ const StatisticsComponent = () => {
                   <YAxis
                     dataKey="driver"
                     type="category"
-                    tick={{ fill: '#E4E4E7' }}
+                    tick={{ fill: '#E4E4E7', fontSize: windowWidth < 640 ? 10 : 12 }}
                     stroke="#A1A1AA"
-                    width={120}
+                    width={80}
                     interval={0}
+                    dx={-10}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="improvementPct" name="Improvement %" fill="#FF5F5F" />
@@ -1030,30 +1061,39 @@ const StatisticsComponent = () => {
             </h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <ScatterChart margin={windowWidth < 640 ? 
+                  { top: 10, right: 5, bottom: 40, left: 5 } : 
+                  { top: 20, right: 20, bottom: 20, left: 20 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
                   <XAxis
                     type="number"
                     dataKey="x"
                     name="Reaction Time"
                     unit="s"
-                    tick={{ fill: '#E4E4E7' }}
+                    tick={{ fill: '#E4E4E7', fontSize: windowWidth < 640 ? 10 : 12 }}
                     stroke="#A1A1AA"
-                    label={{ value: 'Reaction Time (sec)', position: 'bottom', fill: '#E4E4E7' }}
+                    label={windowWidth < 640 ? 
+                      { value: 'Reaction (s)', position: 'bottom', fill: '#E4E4E7', dy: 15 } : 
+                      { value: 'Reaction Time (sec)', position: 'bottom', fill: '#E4E4E7' }
+                    }
                   />
                   <YAxis
                     type="number"
                     dataKey="y"
                     name="1/8 ET"
                     unit="s"
-                    tick={{ fill: '#E4E4E7' }}
+                    tick={{ fill: '#E4E4E7', fontSize: windowWidth < 640 ? 10 : 12 }}
                     stroke="#A1A1AA"
-                    label={{
-                      value: '1/8 Mile ET (sec)',
-                      angle: -90,
-                      position: 'left',
-                      fill: '#E4E4E7',
-                    }}
+                    label={windowWidth < 640 ? 
+                      { value: 'ET (s)', angle: -90, position: 'left', fill: '#E4E4E7', dx: -20 } :
+                      {
+                        value: '1/8 Mile ET (sec)',
+                        angle: -90,
+                        position: 'left',
+                        fill: '#E4E4E7',
+                      }
+                    }
                   />
                   <ZAxis type="number" dataKey="z" range={[5, 20]} />
                   <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<ScatterTooltip />} />
@@ -1070,30 +1110,39 @@ const StatisticsComponent = () => {
             </h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                <ScatterChart margin={windowWidth < 640 ? 
+                  { top: 10, right: 5, bottom: 40, left: 5 } : 
+                  { top: 20, right: 20, bottom: 20, left: 20 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
                   <XAxis
                     type="number"
                     dataKey="x"
                     name="60ft Time"
                     unit="s"
-                    tick={{ fill: '#E4E4E7' }}
+                    tick={{ fill: '#E4E4E7', fontSize: windowWidth < 640 ? 10 : 12 }}
                     stroke="#A1A1AA"
-                    label={{ value: '60ft Time (sec)', position: 'bottom', fill: '#E4E4E7' }}
+                    label={windowWidth < 640 ? 
+                      { value: '60ft (s)', position: 'bottom', fill: '#E4E4E7', dy: 15 } : 
+                      { value: '60ft Time (sec)', position: 'bottom', fill: '#E4E4E7' }
+                    }
                   />
                   <YAxis
                     type="number"
                     dataKey="y"
                     name="1/8 ET"
                     unit="s"
-                    tick={{ fill: '#E4E4E7' }}
+                    tick={{ fill: '#E4E4E7', fontSize: windowWidth < 640 ? 10 : 12 }}
                     stroke="#A1A1AA"
-                    label={{
-                      value: '1/8 Mile ET (sec)',
-                      angle: -90,
-                      position: 'left',
-                      fill: '#E4E4E7',
-                    }}
+                    label={windowWidth < 640 ? 
+                      { value: 'ET (s)', angle: -90, position: 'left', fill: '#E4E4E7', dx: -20 } :
+                      {
+                        value: '1/8 Mile ET (sec)',
+                        angle: -90,
+                        position: 'left',
+                        fill: '#E4E4E7',
+                      }
+                    }
                   />
                   <ZAxis type="number" dataKey="z" range={[5, 20]} />
                   <Tooltip cursor={{ strokeDasharray: '3 3' }} content={<SixtyTooltip />} />
