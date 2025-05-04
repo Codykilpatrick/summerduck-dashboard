@@ -106,6 +106,19 @@ const DriversComponent = () => {
   const [driverStats, setDriverStats] = useState<DriverStats | null>(null);
   const [performanceTrend, setPerformanceTrend] = useState<PerformanceData[]>([]);
   const [opponentStats, setOpponentStats] = useState<OpponentData[]>([]);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
 
   useEffect(() => {
     // Fetch and parse the CSV file
@@ -410,7 +423,6 @@ const DriversComponent = () => {
         <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
           <PolarGrid stroke={GRID_COLOR} />
           <PolarAngleAxis dataKey="metric" tick={{ fill: '#E4E4E7' }} />
-          <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: '#E4E4E7' }} />
           <Radar
             name="Performance"
             dataKey="value"
@@ -458,28 +470,28 @@ const DriversComponent = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-900 text-gray-200 min-h-screen">
-      <h1 className="text-3xl font-bold mb-8 text-center text-gray-100">
+    <div className="p-4 sm:p-6 bg-gray-900 text-gray-200 min-h-screen">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-8 text-center text-gray-100">
         Big Dog Automotive 2024 Season Drivers
       </h1>
 
       {/* Navigation */}
-      <div className="mb-8 flex items-center gap-4 justify-between">
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-center gap-4 justify-between">
         <Link
           href="/"
-          className="bg-gray-800 border border-gray-700 px-4 py-2 rounded hover:bg-gray-700 transition text-white"
+          className="bg-gray-800 border border-gray-700 px-4 py-2 rounded hover:bg-gray-700 transition text-white w-full sm:w-auto text-center sm:text-left"
         >
           ← Back to Dashboard
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full sm:w-auto">
           <label htmlFor="driver-select" className="text-gray-300">
             Select Driver:
           </label>
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <select
               id="driver-select"
-              className="bg-gray-800 border border-gray-700 rounded px-3 py-2 pr-4 text-white appearance-none"
+              className="bg-gray-800 border border-gray-700 rounded px-3 py-2 pr-4 text-white appearance-none w-full"
               value={selectedDriver}
               onChange={e => setSelectedDriver(e.target.value)}
             >
@@ -505,73 +517,73 @@ const DriversComponent = () => {
       {driverStats ? (
         <>
           {/* Driver Stats Overview */}
-          <div className="mb-8">
-            <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+          <div className="mb-6 sm:mb-8">
+            <div className="bg-gray-800 rounded-lg border border-gray-700 p-4 sm:p-6">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-6 sm:gap-8">
                 <div className="text-center md:text-left flex-shrink-0 md:w-1/4">
-                  <h2 className="text-3xl font-bold text-purple-400 mb-1">{driverStats.name}</h2>
-                  <p className="text-xl text-gray-400 mb-4">Car #: {driverStats.carNumber}</p>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-purple-400 mb-1">{driverStats.name}</h2>
+                  <p className="text-lg sm:text-xl text-gray-400 mb-4">Car #: {driverStats.carNumber}</p>
 
                   <div className="flex flex-col gap-2 items-center md:items-start mb-4">
                     <div className="flex gap-2 items-center">
-                      <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                      <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-green-500"></div>
                       <span>Wins: {driverStats.wins}</span>
                     </div>
                     <div className="flex gap-2 items-center">
-                      <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                      <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-red-500"></div>
                       <span>Losses: {driverStats.losses}</span>
                     </div>
                     <div className="flex gap-2 items-center">
-                      <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                      <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-blue-500"></div>
                       <span>Win Rate: {formatPercent(driverStats.winRate)}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex-grow grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-gray-700 p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-purple-300">Reaction Time</h3>
-                    <p className="text-2xl">Avg: {formatTime(driverStats.avgReaction)} sec</p>
-                    <p className="text-lg text-green-400">
+                <div className="flex-grow grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="bg-gray-700 p-3 sm:p-4 rounded-lg">
+                    <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2 text-purple-300">Reaction Time</h3>
+                    <p className="text-xl sm:text-2xl">Avg: {formatTime(driverStats.avgReaction)} sec</p>
+                    <p className="text-sm sm:text-lg text-green-400">
                       Best: {formatTime(driverStats.bestReaction)} sec
                     </p>
                   </div>
 
-                  <div className="bg-gray-700 p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-purple-300">60ft Time</h3>
-                    <p className="text-2xl">Avg: {formatTime(driverStats.avg60ft)} sec</p>
-                    <p className="text-lg text-green-400">
+                  <div className="bg-gray-700 p-3 sm:p-4 rounded-lg">
+                    <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2 text-purple-300">60ft Time</h3>
+                    <p className="text-xl sm:text-2xl">Avg: {formatTime(driverStats.avg60ft)} sec</p>
+                    <p className="text-sm sm:text-lg text-green-400">
                       Best: {formatTime(driverStats.bestSixtyFoot)} sec
                     </p>
                   </div>
 
-                  <div className="bg-gray-700 p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-purple-300">330ft Time</h3>
-                    <p className="text-2xl">Avg: {formatTime(driverStats.avg330ft)} sec</p>
-                    <p className="text-lg text-green-400">
+                  <div className="bg-gray-700 p-3 sm:p-4 rounded-lg">
+                    <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2 text-purple-300">330ft Time</h3>
+                    <p className="text-xl sm:text-2xl">Avg: {formatTime(driverStats.avg330ft)} sec</p>
+                    <p className="text-sm sm:text-lg text-green-400">
                       Best: {formatTime(driverStats.bestThreeThirty)} sec
                     </p>
                   </div>
 
-                  <div className="bg-gray-700 p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-purple-300">1/8 Mile ET</h3>
-                    <p className="text-2xl">Avg: {formatTime(driverStats.avgEighthET)} sec</p>
-                    <p className="text-lg text-green-400">
+                  <div className="bg-gray-700 p-3 sm:p-4 rounded-lg">
+                    <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2 text-purple-300">1/8 Mile ET</h3>
+                    <p className="text-xl sm:text-2xl">Avg: {formatTime(driverStats.avgEighthET)} sec</p>
+                    <p className="text-sm sm:text-lg text-green-400">
                       Best: {formatTime(driverStats.bestEighthET)} sec
                     </p>
                   </div>
 
-                  <div className="bg-gray-700 p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-purple-300">1/8 Mile MPH</h3>
-                    <p className="text-2xl">Avg: {formatMPH(driverStats.avgEighthMPH)} mph</p>
-                    <p className="text-lg text-green-400">
+                  <div className="bg-gray-700 p-3 sm:p-4 rounded-lg">
+                    <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2 text-purple-300">1/8 Mile MPH</h3>
+                    <p className="text-xl sm:text-2xl">Avg: {formatMPH(driverStats.avgEighthMPH)} mph</p>
+                    <p className="text-sm sm:text-lg text-green-400">
                       Best: {formatMPH(driverStats.bestEighthMPH)} mph
                     </p>
                   </div>
 
-                  <div className="bg-gray-700 p-4 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-2 text-purple-300">Total Races</h3>
-                    <p className="text-2xl">{driverStats.races} races</p>
+                  <div className="bg-gray-700 p-3 sm:p-4 rounded-lg">
+                    <h3 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2 text-purple-300">Total Races</h3>
+                    <p className="text-xl sm:text-2xl">{driverStats.races} races</p>
                   </div>
                 </div>
               </div>
@@ -579,48 +591,53 @@ const DriversComponent = () => {
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
             {/* Performance Radar Chart */}
             <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
-              <h2 className="text-xl font-semibold mb-4 text-gray-300">Overall Performance</h2>
-              <p className="text-gray-400 mb-4 text-sm">
+              <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4 text-gray-300">Overall Performance</h2>
+              <p className="text-gray-400 mb-2 sm:mb-4 text-xs sm:text-sm">
                 Scores normalized across all drivers (higher is better in all categories)
               </p>
-              <div className="h-64">
+              <div className="h-56 sm:h-64">
                 <PerformanceRadarChart />
               </div>
             </div>
 
             {/* Performance Trend */}
             <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
-              <h2 className="text-xl font-semibold mb-4 text-gray-300">Performance Trend</h2>
-              <div className="h-64">
+              <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-4 text-gray-300">Performance Trend</h2>
+              <div className="h-56 sm:h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart
                     data={performanceTrend}
-                    margin={{ top: 5, right: 40, left: 40, bottom: -20 }}
+                    margin={windowWidth < 640 ?
+                      { top: 5, right: 20, left: 5, bottom: 20 } :
+                      { top: 5, right: 40, left: 40, bottom: -20 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
                     <XAxis
                       dataKey="date"
-                      tick={{ fill: '#E4E4E7' }}
+                      tick={{ fill: '#E4E4E7', fontSize: windowWidth < 640 ? 10 : 12 }}
                       stroke="#A1A1AA"
                       angle={-45}
                       textAnchor="end"
-                      height={80}
+                      height={windowWidth < 640 ? 60 : 80}
+                      interval={windowWidth < 640 ? 1 : 0}
                     />
                     <YAxis
                       yAxisId="left"
                       domain={['dataMin - 0.1', 'dataMax + 0.1']}
                       tick={{ fill: '#E4E4E7' }}
                       stroke="#A1A1AA"
-                      label={{
-                        value: 'ET',
-                        angle: -90,
-                        position: 'insideLeft',
-                        fill: '#E4E4E7',
-                        dx: -25,
-                      }}
+                      label={windowWidth < 640 ? 
+                        {} : 
+                        {
+                          value: 'ET',
+                          angle: -90,
+                          position: 'insideLeft',
+                          fill: '#E4E4E7',
+                          dx: -25,
+                        }}
                       tickFormatter={value => value.toFixed(3)}
                     />
                     <YAxis
@@ -629,13 +646,15 @@ const DriversComponent = () => {
                       domain={[0, 'dataMax + 5']}
                       tick={{ fill: '#E4E4E7' }}
                       stroke="#A1A1AA"
-                      label={{
-                        value: 'MPH',
-                        angle: 90,
-                        position: 'insideRight',
-                        fill: '#E4E4E7',
-                        dx: 25,
-                      }}
+                      label={windowWidth < 640 ? 
+                        {} : 
+                        {
+                          value: 'MPH',
+                          angle: 90,
+                          position: 'insideRight',
+                          fill: '#E4E4E7',
+                          dx: 25,
+                        }}
                       tickFormatter={value => value.toFixed(2)}
                     />
                     <Tooltip content={<CustomTooltip />} />
@@ -663,18 +682,18 @@ const DriversComponent = () => {
           </div>
 
           {/* Opponent Analysis */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-200">Opponent Analysis</h2>
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-gray-200">Opponent Analysis</h2>
             <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
               <div className="overflow-x-auto">
-                <table className="w-full table-auto">
+                <table className="w-full table-auto text-sm sm:text-base">
                   <thead>
                     <tr className="text-left border-b border-gray-700">
-                      <th className="px-4 py-2 text-gray-300">Opponent</th>
-                      <th className="px-4 py-2 text-gray-300">Races</th>
-                      <th className="px-4 py-2 text-gray-300">Wins</th>
-                      <th className="px-4 py-2 text-gray-300">Losses</th>
-                      <th className="px-4 py-2 text-gray-300">Win Rate</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">Opponent</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">Races</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">Wins</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">Losses</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">Win Rate</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -683,11 +702,11 @@ const DriversComponent = () => {
                         key={opponent.opponent}
                         className="border-b border-gray-700 hover:bg-gray-700"
                       >
-                        <td className="px-4 py-2">{opponent.opponent}</td>
-                        <td className="px-4 py-2">{opponent.races}</td>
-                        <td className="px-4 py-2 text-green-400">{opponent.wins}</td>
-                        <td className="px-4 py-2 text-red-400">{opponent.losses}</td>
-                        <td className="px-4 py-2">{formatPercent(opponent.winRate)}</td>
+                        <td className="px-2 sm:px-4 py-2">{opponent.opponent}</td>
+                        <td className="px-2 sm:px-4 py-2">{opponent.races}</td>
+                        <td className="px-2 sm:px-4 py-2 text-green-400">{opponent.wins}</td>
+                        <td className="px-2 sm:px-4 py-2 text-red-400">{opponent.losses}</td>
+                        <td className="px-2 sm:px-4 py-2">{formatPercent(opponent.winRate)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -698,21 +717,21 @@ const DriversComponent = () => {
 
           {/* Race History */}
           <div>
-            <h2 className="text-2xl font-semibold mb-4 text-gray-200">Race History</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-gray-200">Race History</h2>
             <div className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700">
               <div className="overflow-x-auto">
-                <table className="w-full table-auto">
+                <table className="w-full table-auto text-xs sm:text-sm md:text-base">
                   <thead>
                     <tr className="text-left border-b border-gray-700">
-                      <th className="px-4 py-2 text-gray-300">Date</th>
-                      <th className="px-4 py-2 text-gray-300">Race #</th>
-                      <th className="px-4 py-2 text-gray-300">Opponent</th>
-                      <th className="px-4 py-2 text-gray-300">Result</th>
-                      <th className="px-4 py-2 text-gray-300">Reaction</th>
-                      <th className="px-4 py-2 text-gray-300">60ft</th>
-                      <th className="px-4 py-2 text-gray-300">330ft</th>
-                      <th className="px-4 py-2 text-gray-300">1/8 ET</th>
-                      <th className="px-4 py-2 text-gray-300">1/8 MPH</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">Date</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">Race #</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">Opponent</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">Result</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">Reaction</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">60ft</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">330ft</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">1/8 ET</th>
+                      <th className="px-2 sm:px-4 py-2 text-gray-300">1/8 MPH</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -727,23 +746,23 @@ const DriversComponent = () => {
                               : 'bg-red-900 bg-opacity-20'
                           }`}
                         >
-                          <td className="px-4 py-2">{race.Date}</td>
-                          <td className="px-4 py-2">{race.RaceNumber}</td>
-                          <td className="px-4 py-2">
-                            {race.Opponent} (#{race.OpponentCarNo})
+                          <td className="px-2 sm:px-4 py-2">{race.Date}</td>
+                          <td className="px-2 sm:px-4 py-2">{race.RaceNumber}</td>
+                          <td className="px-2 sm:px-4 py-2">
+                            {race.Opponent} {windowWidth > 480 ? `(#${race.OpponentCarNo})` : ''}
                           </td>
                           <td
-                            className={`px-4 py-2 font-semibold ${
+                            className={`px-2 sm:px-4 py-2 font-semibold ${
                               race.WinLoss === 'Win' ? 'text-green-400' : 'text-red-400'
                             }`}
                           >
                             {race.WinLoss}
                           </td>
-                          <td className="px-4 py-2">{formatTime(race.Reaction)}</td>
-                          <td className="px-4 py-2">{formatTime(race['60ft'])}</td>
-                          <td className="px-4 py-2">{formatTime(race['330ft'])}</td>
-                          <td className="px-4 py-2">{formatTime(race['1/8ET'])}</td>
-                          <td className="px-4 py-2">{formatMPH(race['1/8MPH'])}</td>
+                          <td className="px-2 sm:px-4 py-2">{formatTime(race.Reaction)}</td>
+                          <td className="px-2 sm:px-4 py-2">{formatTime(race['60ft'])}</td>
+                          <td className="px-2 sm:px-4 py-2">{formatTime(race['330ft'])}</td>
+                          <td className="px-2 sm:px-4 py-2">{formatTime(race['1/8ET'])}</td>
+                          <td className="px-2 sm:px-4 py-2">{formatMPH(race['1/8MPH'])}</td>
                         </tr>
                       ))}
                   </tbody>
@@ -753,7 +772,7 @@ const DriversComponent = () => {
           </div>
         </>
       ) : (
-        <div className="text-center p-8 bg-gray-800 rounded-lg">
+        <div className="text-center p-4 sm:p-8 bg-gray-800 rounded-lg">
           <p className="text-xl">Select a driver to see their statistics</p>
         </div>
       )}
