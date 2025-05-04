@@ -562,8 +562,8 @@ const DashboardComponent = () => {
               <BarChart
                 data={avgSpeedByDriver}
                 margin={windowWidth < 640 ? 
-                  { top: 5, right: 20, left: 5, bottom: 40 } : 
-                  { top: 5, right: 30, left: 20, bottom: 50 }}
+                  { top: 5, right: 20, left: 5, bottom: 20 } : 
+                  { top: 5, right: 30, left: 20, bottom: 30 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#3F3F5A" />
                 <XAxis
@@ -572,7 +572,7 @@ const DashboardComponent = () => {
                   stroke="#A1A1AA"
                   angle={-45}
                   textAnchor="end"
-                  height={windowWidth < 640 ? 50 : 60}
+                  height={windowWidth < 640 ? 40 : 50}
                   interval={0}
                 />
                 <YAxis
