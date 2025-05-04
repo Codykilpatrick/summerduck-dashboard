@@ -15,7 +15,6 @@ import {
   Radar,
 } from 'recharts';
 import Papa from 'papaparse';
-import Link from 'next/link';
 
 // Type definitions
 interface RaceRecord {
@@ -477,12 +476,12 @@ const DriversComponent = () => {
 
       {/* Navigation */}
       <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-center gap-4 justify-between">
-        <Link
-          href="/"
+        <button
+          onClick={() => window.location.href = '/'}
           className="bg-gray-800 border border-gray-700 px-4 py-2 rounded hover:bg-gray-700 transition text-white w-full sm:w-auto text-center sm:text-left"
         >
           ← Back to Dashboard
-        </Link>
+        </button>
 
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full sm:w-auto">
           <label htmlFor="driver-select" className="text-gray-300">
